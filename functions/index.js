@@ -65,7 +65,21 @@ app.get('/api/get/:id', (req, res) => {
 
 //Update - put()
 
-//Delete -> delete()
+app.delete("/api/delete/:id", (req, res) => (
+(async () => {
+     try {
+            const reqDoc = db.collection("Patients").doc(req.params.id)
+            await reqDoc.delete();
+
+            return res.status(200).send({status: "Success", msg: "Data Removed"});
+
+    }catch(error) {
+        console.log(error);
+        return res.status(500).send({ status: "Failed", msg: error});
+        }  
+    })
+));
+
 
 //export the api to firebase cloud functions
 exports.app = functions.https.onRequest(app);
