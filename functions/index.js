@@ -63,7 +63,30 @@ app.get('/api/get/:id', (req, res) => {
     })();
 });
 
-//Update - put()
+// Update - put()
+app.put('/api/update/:id', async (req, res, next) => {
+    const reqDoc = await db.collection('Patients').doc(req.params.id);
+    console.log(reqDoc);
+    
+    if(reqDoc){
+        await reqDoc.update({
+            bmi : req.body.bmi,
+            dob : req.body.dob,
+            firstName : req.body.firstName,
+            height : req.body.height,
+            icuAdmit : req.body.icuAdmit,
+            lastName :  req.body.lastName,
+            race : req.body.race,
+            sex : req.body.sex,
+            weight : req.body.weight,
+            zip : req.body.zip 
+        });
+        res.status(200).send({ status: "Success", data: res });
+    } else {
+        res.status(404).send({ status: "Failed", msg: error });
+    }
+}
+);
 
 //Delete -> delete()
 
