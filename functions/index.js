@@ -63,6 +63,20 @@ app.get('/api/get/:id', (req, res) => {
     })();
 });
 
+app.get('/api/get/:image', (req, res) => {
+    (async () => {
+        try {
+            const reqDoc = db.collection('images').doc(req.params.id);
+            let Image = await reqDoc.get();
+            let response = Image.data();
+
+            return res.status(200).send({ status: "Success", data: response });
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send({ status: "Failed", msg: error });
+        }
+    })();
+});
 //Update - put()
 
 //Delete -> delete()
