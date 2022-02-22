@@ -63,14 +63,26 @@ app.get('/api/get/:id', (req, res) => {
     })();
 });
 
-app.get('/api/get/:image', (req, res) => {
+app.get('/api/get/images/:id', (req, res) => {
     (async () => {
         try {
-            const reqDoc = db.collection('images').doc(req.params.id);
-            let Image = await reqDoc.get();
-            let response = Image.data();
+            const { id } = req.params;
+            // Collection has space in front of name in Firebase
+            const imagesCollection = db.collection('images ').doc(id);
+            const userExamColletions = await imagesCollection.listCollections();
 
-            return res.status(200).send({ status: "Success", data: response });
+            let links = {};
+            links[id] = [];
+
+            for await (const exam of userExamColletions) {
+                let snapshot = await exam.get();
+                snapshot.forEach(async (document) => {
+                    let doc = document.data();
+                    links[id].push(doc.link);
+                });
+            }
+
+            return res.status(200).send({ status: "Success", data: links });
         } catch (error) {
             console.log(error);
             return res.status(500).send({ status: "Failed", msg: error });
