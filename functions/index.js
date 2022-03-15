@@ -9,6 +9,7 @@ admin.initializeApp({
 const express = require("express");
 
 const cors = require("cors");
+const { ref } = require("firebase-functions/v1/database");
 
 // Main app
 const app = express();
@@ -63,6 +64,92 @@ app.get('/api/get/:id', (req, res) => {
     })();
 });
 
+
+app.delete('/api/delete/:id', (req, res) => {
+    (async () => {
+        try {
+            const { id } = req.params;
+            console.log(id)
+            // Collection has space in front of name in Firebase
+            const patientsCollection = db.collection('Patients').doc(id);
+            const imagesCollection = db.collection('images ').doc(id);
+            const userExamCollections = await imagesCollection.listCollections();
+
+            for await (const exam of userExamCollections) {
+                let snapshot = await exam.get();
+                snapshot.forEach(async (document) => {
+                    await document.ref.delete();
+                });
+            };
+            imagesCollection.delete();
+            patientsCollection.delete();
+            console.log("we are hitting the console log statement");
+         
+
+            return res.status(200).send({ status: "Success", });
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send({ status: "Failed", msg: error });
+        }
+    })();
+});
+
+app.delete('/api/delete/images/:id/:exa', (req, res) => {
+    (async () => {
+        try {
+            const { id } = req.params;
+            const { exa } = req.params;
+            console.log(id)
+            // Collection has space in front of name in Firebase
+            const imagesCollection = db.collection('images ').doc(id);
+            const userExamCollections = await imagesCollection.collection('exams').doc(exa);
+
+            
+                userExamCollections.ref.delete();
+                
+            
+        
+            console.log("we are hitting the console log statement");
+         
+
+            return res.status(200).send({ status: "Success", });
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send({ status: "Failed", msg: error });
+        }
+    })();
+});
+
+
+app.get('/api/get/images/:id', (req, res) => {
+    (async () => {
+        try {
+            const { id } = req.params;
+            // Collection has space in front of name in Firebase
+            const imagesCollection = db.collection('images ').doc(id);
+            const userExamColletions = await imagesCollection.listCollections();
+
+           let links = {};
+            links[id] = [];
+
+            for await (const exam of userExamColletions) {
+                let snapshot = await exam.get();
+                snapshot.forEach(async (document) => {
+                    let doc = document.data();
+                    links[id].push(doc.link);
+                });
+            } 
+
+
+           
+
+            return res.status(200).send({ status: "Success", data: links });
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send({ status: "Failed", msg: error });
+        }
+    })();
+});
 //Update - put()
 
 //Delete -> delete()
